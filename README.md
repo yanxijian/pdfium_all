@@ -20,13 +20,20 @@ git clone --recurse-submodules <本仓库 URL> pdfium_all
 git submodule update --init --recursive
 ```
 
-子模块 `pdfium` 跟踪分支 `chromium/7947_cmake`（见 `.gitmodules`）。
+Windows 推荐：
+
+```powershell
+.\scripts\bootstrap.ps1 -VcpkgRoot D:\Codes\vcpkg
+.\scripts\build.ps1      # configure + build + stage + smoke test
+```
+
+子模块 `pdfium` 跟踪分支 `chromium/7947_cmake`（见 `.gitmodules`）。版本钉扎见 [`deps.lock.md`](deps.lock.md)；依赖策略见 [`docs/deps-policy.md`](docs/deps-policy.md)。
 
 ## 依赖与构建（概要）
 
+- **构建用 vcpkg / 系统包**；`thirdparty/` 是钉版本的源码镜像（当前不直接参与 CMake `find_package`）。
 - AGG / lcms2 / OpenJPEG：在 `pdfium/third_party` 内置。
-- zlib / libjpeg-turbo / FreeType / HarfBuzz / Abseil / fast_float：见 [`thirdparty/`](thirdparty/) 子模块；ICU 可用 vcpkg/系统包或按 `thirdparty/icu/README.md` 引入。
-- CMake MVP：无 V8 / 无 XFA / AGG，产物为静态库；说明见 [`docs/cmake-build.md`](docs/cmake-build.md) 与 `pdfium/docs/cmake-build.md`。
+- CMake MVP：无 V8 / 无 XFA / AGG；说明见 [`docs/cmake-build.md`](docs/cmake-build.md)。
 - Windows 必须使用 **Clang-cl**。
 
 ## 产出归档
