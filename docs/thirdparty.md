@@ -1,6 +1,8 @@
 # 第三方依赖清单
 
-CMake MVP（无 V8 / 无 XFA / AGG）所需外部依赖如下。AGG、lcms2、OpenJPEG 已内置在 `pdfium/third_party`，**不**放入本目录。
+CMake MVP（AGG；默认无 V8 / 无 XFA）所需外部依赖如下。AGG、lcms2、OpenJPEG 已内置在 `pdfium/third_party`，**不**放入本目录。
+
+可选 Acrobat JS（V8）由 meta 仓库脚本来侧车获取，**不是**本目录 submodule；见 [`deps.lock.md`](../deps.lock.md) 与 [`cmake-build.md`](cmake-build.md)。
 
 | 依赖 | 本目录建议路径 | 上游 | 用途 |
 |------|----------------|------|------|
@@ -20,7 +22,7 @@ Linux 另需系统 **Fontconfig**；macOS 链接 AppKit / CoreFoundation / CoreG
 
 1. **子仓库（推荐）**：在 `thirdparty/` 下以 git submodule 引入上表仓库。
 2. **源码解压**：将发行包解压到对应目录（勿提交巨型历史时可用 `.gitignore` 排除内容、仅留 README）。
-3. **包管理器**：Windows 可用 vcpkg（见 [cmake-build.md](cmake-build.md)），此时本目录可作为对照版本钉扎，不必重复编译。
+3. **包管理器**：Windows 可用 vcpkg（见 [cmake-build.md](cmake-build.md)），此时本目录作为对照版本钉扎，不必重复编译。
 
 ## 本仓库当前状态
 

@@ -14,10 +14,27 @@ are the version-locked source mirror for review and future source-builds.
 | `thirdparty/abseil-cpp` | source mirror | `20260107.1` | `255c84dadd029fd8ad25c5efb5933e47beaa00c7` |
 | `thirdparty/fast_float` | source mirror | `v8.0.2` | `50a80a73ab2ab256ba1c3bf86923ddd8b4202bc7` |
 | `thirdparty/icu` | not vendored | use vcpkg / system | — |
+| V8 engine | GN sidecar (not a submodule) | `pdfium/DEPS` `v8_revision` | `7ed96d92b72bea98ff3a84513dfaf73c40681227` |
+
+V8 is fetched/built by `scripts/fetch_v8.*` + `scripts/build_v8.*` into `.tools/v8-out` by default (gitignored), or any directory pointed to by `PDFIUM_V8_ROOT`. Do not confuse with the `thirdparty/fast_float` tag `v8.0.2`.
+
+Stamp layout expected by CMake (`PDFIUM_V8_ROOT`, **shared/component**):
+
+| Relative path | Purpose |
+|---------------|---------|
+| `v8/include/` | Public V8 headers |
+| `bin/v8.dll` (+ `v8_libbase.dll`, `v8_libplatform.dll`, often `libc++.dll`) | Runtime |
+| `lib/v8.dll.lib` (+ matching import libs) | Link |
+| `include/c++` + `include/c++config/` | Chromium libc++ headers + `__config_site` |
+| `include/v8-gn.h` (optional) | Embedder feature header (`V8_GN_HEADER`) |
+| `bin/snapshot_blob.bin` | Only if external startup data is enabled |
+| `V8_SHARED.txt` | Marker that this stamp is component/shared |
+
+PDFium CMake defaults to `PDFIUM_BUILD_SHARED=ON` (`pdfium.dll`). `PDFIUM_ENABLE_V8` remains OFF by default.
 
 ## Reference Windows build packages (vcpkg `x64-windows`)
 
-Versions that successfully built the CMake MVP (for reference; pin via your own vcpkg baseline if needed):
+Versions known to build the CMake MVP (for reference; pin via your own vcpkg baseline if needed):
 
 | Port | Version |
 |------|---------|

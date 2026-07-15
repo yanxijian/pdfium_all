@@ -54,3 +54,4 @@ Write-Host "== pins (see deps.lock.md) =="
 git submodule status
 Write-Host "Bootstrap done."
 Write-Host "Next: .\scripts\build.ps1"
+Write-Host "Optional V8: .\scripts\fetch_v8.ps1 ; .\scripts\build_v8.ps1 ; .\scripts\build.ps1 -EnableV8"

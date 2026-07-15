@@ -39,4 +39,46 @@ for name in libpdfium.so libpdfium.dylib pdfium.dll; do
   fi
 done
 
+stage_sample() {
+  local name="$1"
+  local bin
+  bin="$(find_art "${name}" || true)"
+  if [[ -z "${bin}" ]]; then
+    bin="$(find_art "${name}.exe" || true)"
+  fi
+  if [[ -z "${bin}" ]]; then
+    return 0
+  fi
+  cp -a "${bin}" "${OUT_ROOT}/bin/"
+  echo "Staged bin: ${bin}"
+  local dir
+  dir="$(dirname "${bin}")"
+  for blob in snapshot_blob.bin icudtl.dat; do
+    if [[ -f "${dir}/${blob}" ]]; then
+      cp -a "${dir}/${blob}" "${OUT_ROOT}/bin/"
+      echo "Staged bin: ${blob}"
+    fi
+  done
+}
+
+stage_sample simple_no_v8
+stage_sample simple_with_v8
+
+V8_ROOT="${PDFIUM_V8_ROOT:-${REPO_ROOT}/.tools/v8-out}"
+if [[ -d "${V8_ROOT}/bin" ]]; then
+  shopt -s nullglob
+  for f in "${V8_ROOT}/bin"/*.{dll,so,dylib} "${V8_ROOT}/bin"/snapshot_blob.bin "${V8_ROOT}/bin"/icudtl.dat; do
+    [[ -f "$f" ]] || continue
+    cp -a "$f" "${OUT_ROOT}/bin/"
+    echo "Staged V8 runtime: $(basename "$f")"
+  done
+fi
+if [[ -d "${V8_ROOT}/lib" ]]; then
+  for f in "${V8_ROOT}/lib"/*.{lib,a,dll.lib}; do
+    [[ -f "$f" ]] || continue
+    cp -a "$f" "${OUT_ROOT}/lib/"
+    echo "Staged V8 lib: $(basename "$f")"
+  done
+fi
+
 echo "Done. Output root: ${OUT_ROOT}"

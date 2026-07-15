@@ -6,7 +6,8 @@ param(
   [Parameter(Mandatory = $true)]
   [string] $BuildDir,
 
-  [string] $Config = "Release"
+  [string] $Config = "Release",
+  [string] $V8Root = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -86,18 +87,58 @@ if ($pdb) {
   Copy-Item -LiteralPath $pdb -Destination $binDst -Force
 }
 
-$exe = Resolve-OneArtifact -FileName "simple_no_v8.exe"
-if (-not $exe) { $exe = Resolve-OneArtifact -FileName "simple_no_v8" }
-if ($exe) {
+function Stage-SampleExe([string] $Name) {
+  $exe = Resolve-OneArtifact -FileName "$Name.exe"
+  if (-not $exe) { $exe = Resolve-OneArtifact -FileName $Name }
+  if (-not $exe) { return $null }
   Copy-Item -LiteralPath $exe -Destination $binDst -Force
   Write-Host "Staged bin: $exe"
-  # Runtime DLLs next to the sample (vcpkg shared deps), if present.
   $exeDir = Split-Path -Parent $exe
   Get-ChildItem -LiteralPath $exeDir -Filter *.dll -File -ErrorAction SilentlyContinue |
     ForEach-Object {
       Copy-Item -LiteralPath $_.FullName -Destination $binDst -Force
       Write-Host "Staged bin: $($_.Name)"
     }
+  foreach ($blob in @("snapshot_blob.bin", "icudtl.dat")) {
+    $src = Join-Path $exeDir $blob
+    if (Test-Path -LiteralPath $src) {
+      Copy-Item -LiteralPath $src -Destination $binDst -Force
+      Write-Host "Staged bin: $blob"
+    }
+  }
+  return $exe
+}
+
+Stage-SampleExe -Name "simple_no_v8" | Out-Null
+Stage-SampleExe -Name "simple_with_v8" | Out-Null
+
+# Also stage shared V8 runtimes from the stamp (in case POST_BUILD skipped some).
+if (-not $V8Root) {
+  if ($env:PDFIUM_V8_ROOT) { $V8Root = $env:PDFIUM_V8_ROOT }
+  else {
+    $def = Join-Path $RepoRoot ".tools\v8-out"
+    if (Test-Path (Join-Path $def "bin\v8.dll")) { $V8Root = $def }
+  }
+}
+if ($V8Root) {
+  $v8Bin = Join-Path $V8Root "bin"
+  if (Test-Path -LiteralPath $v8Bin) {
+    Get-ChildItem -LiteralPath $v8Bin -File -ErrorAction SilentlyContinue |
+      Where-Object { $_.Extension -in '.dll','.so','.dylib' -or $_.Name -in 'snapshot_blob.bin','icudtl.dat' } |
+      ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination $binDst -Force
+        Write-Host "Staged V8 runtime: $($_.Name)"
+      }
+  }
+  $v8Lib = Join-Path $V8Root "lib"
+  if (Test-Path -LiteralPath $v8Lib) {
+    Get-ChildItem -LiteralPath $v8Lib -File -ErrorAction SilentlyContinue |
+      Where-Object { $_.Extension -in '.lib','.a' -or $_.Name -like '*.dll.lib' } |
+      ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination $libDst -Force
+        Write-Host "Staged V8 lib: $($_.Name)"
+      }
+  }
 }
 
 Write-Host "Done. Output root: $OutRoot"
