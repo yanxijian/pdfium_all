@@ -1,0 +1,22 @@
+[submodule "pdfium"]
+	path = pdfium
+	url = https://github.com/yanxijian/pdfium.git
+	branch = chromium/7947_cmake
+[submodule "thirdparty/zlib"]
+	path = thirdparty/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "thirdparty/fast_float"]
+	path = thirdparty/fast_float
+	url = https://github.com/fastfloat/fast_float.git
+[submodule "thirdparty/abseil-cpp"]
+	path = thirdparty/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
+[submodule "thirdparty/libjpeg-turbo"]
+	path = thirdparty/libjpeg-turbo
+	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+[submodule "thirdparty/freetype"]
+	path = thirdparty/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule "thirdparty/harfbuzz"]
+	path = thirdparty/harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz.git

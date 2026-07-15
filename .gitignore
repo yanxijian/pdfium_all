@@ -1,0 +1,17 @@
+# 忽略构建与产物，保留目录占位
+
+/output/include/**
+!/output/include/.gitkeep
+/output/lib/**
+!/output/lib/.gitkeep
+/output/bin/**
+!/output/bin/.gitkeep
+
+# 常见临时文件
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# 可选：若第三方以解压源码而非 submodule 放入，可按需取消下一行注释
+# /thirdparty/*/
