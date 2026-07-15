@@ -1,13 +1,25 @@
 <#
 .SYNOPSIS
-  Initialize submodules and check local toolchain for PDFium CMake MVP.
+  Initialize submodules and check toolchain for PDFium CMake MVP.
+
+.PARAMETER VcpkgRoot
+  Optional path to vcpkg. Defaults to $env:VCPKG_ROOT, then `vcpkg` on PATH, then .tools/vcpkg.
+
+.PARAMETER BootstrapVcpkg
+  If set and no vcpkg is found, clone+bootstrap vcpkg into <repo>/.tools/vcpkg (gitignored).
+
+.PARAMETER InstallDeps
+  If set, run `vcpkg install` for the packages listed in deps.lock.md.
 #>
 param(
-  [string] $VcpkgRoot = $env:VCPKG_ROOT
+  [string] $VcpkgRoot = "",
+  [switch] $BootstrapVcpkg,
+  [switch] $InstallDeps
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = Split-Path -Parent $PSScriptRoot
+. "$PSScriptRoot\Common.ps1"
+$RepoRoot = Get-RepoRoot
 Set-Location $RepoRoot
 
 Write-Host "== git submodule update --init --recursive =="
@@ -22,42 +34,23 @@ function Require-Cmd([string] $Name) {
 
 Write-Host "== toolchain =="
 Require-Cmd cmake
-# Ninja: PATH, or Visual Studio's bundled copy
-if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
-  $vsNinja = "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
-  if (-not (Test-Path $vsNinja)) {
-    $vsNinja = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
-  }
-  if (Test-Path (Join-Path $vsNinja "ninja.exe")) {
-    $env:Path = "$vsNinja;" + $env:Path
-  }
-}
-Require-Cmd ninja
 Require-Cmd git
+Ensure-NinjaOnPath
+Require-Cmd ninja
+Ensure-ClangClOnPath
+Require-Cmd clang-cl
 
-$clang = Get-Command clang-cl -ErrorAction SilentlyContinue
-if (-not $clang) {
-  $guess = "C:\Program Files\LLVM\bin\clang-cl.exe"
-  if (Test-Path -LiteralPath $guess) {
-    $env:Path = "C:\Program Files\LLVM\bin;" + $env:Path
-    $clang = Get-Command clang-cl -ErrorAction SilentlyContinue
-  }
-}
-if (-not $clang) {
-  throw "clang-cl not found. Install LLVM and ensure it is on PATH."
-}
-Write-Host "OK clang-cl -> $($clang.Source)"
+$vcpkg = Require-VcpkgRoot -VcpkgRoot $VcpkgRoot -BootstrapVcpkg:$BootstrapVcpkg -RepoRoot $RepoRoot
+Write-Host "OK vcpkg -> $vcpkg"
 
-if (-not $VcpkgRoot) {
-  if (Test-Path "D:\Codes\vcpkg\vcpkg.exe") { $VcpkgRoot = "D:\Codes\vcpkg" }
-}
-if (-not $VcpkgRoot -or -not (Test-Path (Join-Path $VcpkgRoot "scripts\buildsystems\vcpkg.cmake"))) {
-  Write-Warning "VCPKG_ROOT not set / vcpkg.cmake missing. build.ps1 will require -VcpkgRoot."
-} else {
-  Write-Host "OK vcpkg -> $VcpkgRoot"
-  $env:VCPKG_ROOT = $VcpkgRoot
+if ($InstallDeps) {
+  Write-Host "== vcpkg install (see deps.lock.md) =="
+  $vcpkgExe = Join-Path $vcpkg "vcpkg.exe"
+  & $vcpkgExe install zlib libjpeg-turbo freetype icu harfbuzz abseil --triplet x64-windows
+  if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed" }
 }
 
 Write-Host "== pins (see deps.lock.md) =="
 git submodule status
 Write-Host "Bootstrap done."
+Write-Host "Next: .\scripts\build.ps1"

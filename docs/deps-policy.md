@@ -12,11 +12,12 @@
 
 ## 为什么这样分
 
-1. ICU / FreeType / HarfBuzz 等二进制部署在 Windows 上用 vcpkg 最省事，且已在本仓库验证路径上跑通。
-2. 子模块把「用过哪几个上游 tag」写进 git history（见 [`deps.lock.md`](../deps.lock.md)），避免 tip 漂移。
-3. 将来若要纯源码构建，可在 CMake 中增加 `PDFIUM_USE_BUNDLED_THIRDPARTY=ON` 一类开关再接线；**当前非目标**。
+1. ICU / FreeType / HarfBuzz 等在 Windows 上用 vcpkg 安装最省事（端口版本见 [`deps.lock.md`](../deps.lock.md)）。
+2. 子模块把「用过哪几个上游 tag」写进 git history，避免 tip 漂移。
+3. 将来若要纯源码构建，可在 CMake 中增加开关再接线；**当前非目标**。
 
 ## 操作约定
 
+- 不要在文档 / 脚本里硬编码某台机器的盘符路径；使用 `VCPKG_ROOT` 或 `bootstrap.ps1 -BootstrapVcpkg`（落到仓库 `.tools/vcpkg`）。
 - 升级依赖：先在 vcpkg（或系统包）验证能编过 → 再把对应 `thirdparty/*` checkout 到同名 tag → 更新 `deps.lock.md` → 提交 meta 仓库的 gitlink。
 - ICU：体积大，不设 submodule；始终用 vcpkg/系统包，版本记在 `deps.lock.md` 的 vcpkg 表中。

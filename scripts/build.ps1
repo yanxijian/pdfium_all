@@ -1,57 +1,37 @@
 <#
 .SYNOPSIS
   Configure + build PDFium CMake MVP, then stage into output/.
+
+.PARAMETER VcpkgRoot
+  Optional path to vcpkg. Defaults to $env:VCPKG_ROOT / PATH / .tools/vcpkg.
+
+.PARAMETER BootstrapVcpkg
+  Passed through to vcpkg resolution (clone into .tools/vcpkg if missing).
 #>
 param(
-  [string] $VcpkgRoot = $env:VCPKG_ROOT,
+  [string] $VcpkgRoot = "",
   [string] $BuildDir = "",
   [string] $Config = "Release",
+  [switch] $BootstrapVcpkg,
   [switch] $SkipStage
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = Split-Path -Parent $PSScriptRoot
+. "$PSScriptRoot\Common.ps1"
+$RepoRoot = Get-RepoRoot
 if (-not $BuildDir) { $BuildDir = Join-Path $RepoRoot "pdfium\out\cmake" }
 
-if (-not $VcpkgRoot) {
-  if (Test-Path "D:\Codes\vcpkg\vcpkg.exe") { $VcpkgRoot = "D:\Codes\vcpkg" }
-}
-$toolchain = Join-Path $VcpkgRoot "scripts\buildsystems\vcpkg.cmake"
-if (-not (Test-Path -LiteralPath $toolchain)) {
-  throw "vcpkg toolchain not found: $toolchain (pass -VcpkgRoot)"
-}
+$vcpkg = Require-VcpkgRoot -VcpkgRoot $VcpkgRoot -BootstrapVcpkg:$BootstrapVcpkg -RepoRoot $RepoRoot
+$toolchain = Join-Path $vcpkg "scripts\buildsystems\vcpkg.cmake"
 
-# Ensure clang-cl and ninja on PATH
-if (-not (Get-Command clang-cl -ErrorAction SilentlyContinue)) {
-  $llvmBin = "C:\Program Files\LLVM\bin"
-  if (Test-Path $llvmBin) { $env:Path = "$llvmBin;" + $env:Path }
-}
-if (-not (Get-Command clang-cl -ErrorAction SilentlyContinue)) {
-  throw "clang-cl required on Windows"
-}
-if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
-  $vsNinja = "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
-  if (-not (Test-Path (Join-Path $vsNinja "ninja.exe"))) {
-    $vsNinja = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja"
-  }
-  if (Test-Path (Join-Path $vsNinja "ninja.exe")) {
-    $env:Path = "$vsNinja;" + $env:Path
-  }
-}
-if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
-  throw "ninja not found on PATH"
-}
+Ensure-ClangClOnPath
+Ensure-NinjaOnPath
 
-# Prefer VS env for Windows SDK link libs
-$vcvarsCandidates = @(
-  "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat",
-  "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-)
-$vcvars = $vcvarsCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+$vcvars = Find-Vcvars64
 
 Write-Host "== configure =="
 Write-Host "BuildDir=$BuildDir"
-Write-Host "VcpkgRoot=$VcpkgRoot"
+Write-Host "VcpkgRoot=$vcpkg"
 
 $cmakeArgs = @(
   "-S", (Join-Path $RepoRoot "pdfium"),
@@ -74,7 +54,7 @@ if ($vcvars) {
   cmd /c "`"$vcvars`" && cmake --build `"$BuildDir`" --target pdfium simple_no_v8 -j %NUMBER_OF_PROCESSORS%"
   if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
 } else {
-  Write-Warning "vcvars64.bat not found; configuring without VS env"
+  Write-Warning "vcvars64.bat not found via vswhere; configuring without VS env"
   & cmake @cmakeArgs
   if ($LASTEXITCODE -ne 0) { throw "cmake configure failed" }
   Write-Host "== build =="
@@ -90,8 +70,13 @@ if (-not $SkipStage) {
 $exe = Join-Path $RepoRoot "output\bin\simple_no_v8.exe"
 if (Test-Path -LiteralPath $exe) {
   Write-Host "== smoke test =="
-  & $exe
-  if ($LASTEXITCODE -ne 0) { throw "simple_no_v8 failed with exit $LASTEXITCODE" }
+  Push-Location (Split-Path -Parent $exe)
+  try {
+    & .\simple_no_v8.exe
+    if ($LASTEXITCODE -ne 0) { throw "simple_no_v8 failed with exit $LASTEXITCODE" }
+  } finally {
+    Pop-Location
+  }
   Write-Host "simple_no_v8 OK"
 }
 
