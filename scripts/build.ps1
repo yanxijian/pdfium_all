@@ -2,17 +2,18 @@
 .SYNOPSIS
   Configure + build PDFium CMake MVP, then stage into output/.
 
-.PARAMETER EnableV8
-  Build with Acrobat JS (PDFIUM_ENABLE_V8=ON). Requires a stamped V8 tree
-  (see fetch_v8.ps1 / build_v8.ps1) or PDFIUM_V8_ROOT.
+  Default (VolitionToolchain): MSVC cl + C++20 + V8 OFF + AbseilPin when present.
+  Use -UseClangCl for the legacy Clang-cl path; -EnableV8 forces Clang-cl + libc++ ABI.
 #>
 param(
   [string] $VcpkgRoot = "",
   [string] $V8Root = "",
   [string] $BuildDir = "",
   [string] $Config = "Release",
+  [string] $AbseilPinPrefix = "",
   [switch] $BootstrapVcpkg,
   [switch] $EnableV8,
+  [switch] $UseClangCl,
   [switch] $SkipStage
 )
 
@@ -23,14 +24,16 @@ if (-not $BuildDir) {
   if ($EnableV8) {
     $BuildDir = Join-Path $RepoRoot "pdfium\out\cmake-v8"
   } else {
-    $BuildDir = Join-Path $RepoRoot "pdfium\out\cmake"
+    $BuildDir = Join-Path $RepoRoot "pdfium\out\cmake-msvc"
   }
 }
 
 $vcpkg = Require-VcpkgRoot -VcpkgRoot $VcpkgRoot -BootstrapVcpkg:$BootstrapVcpkg -RepoRoot $RepoRoot
 $toolchain = Join-Path $vcpkg "scripts\buildsystems\vcpkg.cmake"
 
-Ensure-ClangClOnPath
+if ($UseClangCl -or $EnableV8) {
+  Ensure-ClangClOnPath
+}
 Ensure-NinjaOnPath
 $ninjaExe = (Get-Command ninja).Source
 
@@ -39,12 +42,21 @@ if ($EnableV8) {
   $pdfiumV8 = Require-PdfiumV8Root -V8Root $V8Root -RepoRoot $RepoRoot
 }
 
+if (-not $AbseilPinPrefix) {
+  $siblingPin = Join-Path (Split-Path $RepoRoot -Parent) "AbseilPin\prefix\20260107.1"
+  if (Test-Path (Join-Path $siblingPin "lib\cmake\absl\abslConfig.cmake")) {
+    $AbseilPinPrefix = $siblingPin
+  }
+}
+
 $vcvars = Find-Vcvars64
 
 Write-Host "== configure =="
 Write-Host "BuildDir=$BuildDir"
 Write-Host "VcpkgRoot=$vcpkg"
 Write-Host "EnableV8=$EnableV8"
+Write-Host "UseClangCl=$($UseClangCl -or $EnableV8)"
+if ($AbseilPinPrefix) { Write-Host "PDFIUM_ABSEIL_PIN_PREFIX=$AbseilPinPrefix" }
 if ($pdfiumV8) { Write-Host "PDFIUM_V8_ROOT=$pdfiumV8" }
 
 $cmakeArgs = @(
@@ -53,11 +65,28 @@ $cmakeArgs = @(
   "-G", "Ninja",
   "-DCMAKE_MAKE_PROGRAM=$ninjaExe",
   "-DCMAKE_BUILD_TYPE=$Config",
-  "-DCMAKE_C_COMPILER=clang-cl",
-  "-DCMAKE_CXX_COMPILER=clang-cl",
   "-DCMAKE_TOOLCHAIN_FILE=$toolchain",
-  "-DVCPKG_TARGET_TRIPLET=x64-windows"
+  "-DVCPKG_TARGET_TRIPLET=x64-windows",
+  "-DCMAKE_CXX_STANDARD=20",
+  "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
+  "-DCMAKE_CXX_EXTENSIONS=OFF"
 )
+
+if ($UseClangCl -or $EnableV8) {
+  $cmakeArgs += @(
+    "-DCMAKE_C_COMPILER=clang-cl",
+    "-DCMAKE_CXX_COMPILER=clang-cl"
+  )
+} else {
+  $cmakeArgs += @(
+    "-DCMAKE_C_COMPILER=cl",
+    "-DCMAKE_CXX_COMPILER=cl"
+  )
+}
+
+if ($AbseilPinPrefix) {
+  $cmakeArgs += "-DPDFIUM_ABSEIL_PIN_PREFIX=$AbseilPinPrefix"
+}
 
 if ($EnableV8) {
   $cmakeArgs += @(
@@ -70,7 +99,6 @@ if ($EnableV8) {
 
 $targets = @("pdfium", "simple_no_v8")
 if ($EnableV8) { $targets += "simple_with_v8" }
-$targetArgs = ($targets | ForEach-Object { "--target"; $_ }) -join ' '
 
 if ($vcvars) {
   $argLine = ($cmakeArgs | ForEach-Object {
