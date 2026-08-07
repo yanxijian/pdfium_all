@@ -37,8 +37,12 @@ Require-Cmd cmake
 Require-Cmd git
 Ensure-NinjaOnPath
 Require-Cmd ninja
-Ensure-ClangClOnPath
-Require-Cmd clang-cl
+# Product path uses MSVC cl (via vcvars). clang-cl is only required for -UseClangCl / V8.
+if (Get-Command clang-cl -ErrorAction SilentlyContinue) {
+  Write-Host "OK clang-cl -> $((Get-Command clang-cl).Source) (optional)"
+} else {
+  Write-Host "NOTE clang-cl not on PATH (OK for default MSVC cl builds; needed for -UseClangCl / V8)"
+}
 
 $vcpkg = Require-VcpkgRoot -VcpkgRoot $VcpkgRoot -BootstrapVcpkg:$BootstrapVcpkg -RepoRoot $RepoRoot
 Write-Host "OK vcpkg -> $vcpkg"

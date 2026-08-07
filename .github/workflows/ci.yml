@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pdfium-all-ci-${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  windows-msvc:
+    name: Windows MSVC cl + C++20 (V8 off)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout pdfium_all
+        uses: actions/checkout@v7
+      - name: Init pdfium submodule only
+        run: git submodule update --init pdfium
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - uses: seanmiddleditch/gha-setup-ninja@v6
+      - name: Checkout vcpkg
+        uses: actions/checkout@v7
+        with:
+          repository: microsoft/vcpkg
+          path: vcpkg
+      - name: Bootstrap vcpkg
+        working-directory: vcpkg
+        shell: cmd
+        run: bootstrap-vcpkg.bat -disableMetrics
+      - name: Cache vcpkg installed
+        uses: actions/cache@v6
+        with:
+          path: vcpkg/installed
+          key: vcpkg-x64-windows-${{ hashFiles('deps.lock.md') }}
+      - name: Install vcpkg ports
+        shell: pwsh
+        run: |
+          $env:VCPKG_ROOT = Join-Path $env:GITHUB_WORKSPACE "vcpkg"
+          & "$env:VCPKG_ROOT\vcpkg.exe" install zlib libjpeg-turbo freetype icu harfbuzz abseil --triplet x64-windows
+      - name: Build (product path)
+        shell: pwsh
+        run: |
+          $env:VCPKG_ROOT = Join-Path $env:GITHUB_WORKSPACE "vcpkg"
+          .\scripts\build.ps1 -SkipStage -VcpkgRoot $env:VCPKG_ROOT
+
+  linux:
+    name: Ubuntu Ninja (V8 off)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pdfium_all
+        uses: actions/checkout@v7
+      - name: Init pdfium submodule only
+        run: git submodule update --init pdfium
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build \
+            zlib1g-dev libjpeg-dev libfreetype6-dev libicu-dev \
+            libharfbuzz-dev libfontconfig1-dev libabsl-dev
+      - name: Configure
+        run: |
+          cmake -S pdfium -B pdfium/out/cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPDFIUM_ENABLE_V8=OFF \
+            -DCMAKE_CXX_STANDARD=20 \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+            -DCMAKE_CXX_EXTENSIONS=OFF
+      - name: Build
+        run: cmake --build pdfium/out/cmake --target pdfium simple_no_v8
+      - name: Smoke
+        run: |
+          set -euo pipefail
+          exe="$(find pdfium/out/cmake -type f -name simple_no_v8 -perm -111 | head -n1)"
+          if [[ -z "$exe" ]]; then
+            echo "simple_no_v8 not found" >&2
+            find pdfium/out/cmake -maxdepth 4 \( -name 'simple_no_v8*' -o -name '*pdfium*' \) | head -50
+            exit 1
+          fi
+          dir="$(dirname "$exe")"
+          # Shared lib next to sample when staged by sample POST_BUILD.
+          (cd "$dir" && ./simple_no_v8)

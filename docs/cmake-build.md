@@ -43,7 +43,7 @@
 
 ## 手工流程（Windows + vcpkg）
 
-先保证环境变量 `VCPKG_ROOT` 已指向 vcpkg，且 LLVM / Ninja 在 `PATH` 中；在已加载 VS x64 开发环境的 shell 中执行：
+先保证环境变量 `VCPKG_ROOT` 已指向 vcpkg；在已加载 VS x64 开发环境的 shell 中执行（产品路径用 **MSVC `cl`**，不必装 LLVM）：
 
 ```bat
 cmake -S pdfium -B pdfium/out/cmake-msvc -G Ninja -DCMAKE_BUILD_TYPE=Release ^
