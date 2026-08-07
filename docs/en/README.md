@@ -4,11 +4,11 @@
 
 Meta-repo that aggregates **PDFium** sources, third-party mirrors, docs, and staged build output.
 
-Repo: https://github.com/yanxijian/pdfium_all  
+Repo: [yanxijian/pdfium_all](https://github.com/yanxijian/pdfium_all)
 
 > Canonical docs are Chinese — start at the [root README](../../README.md).
 
-**VolitionToolchain (product path):** Windows **MSVC `cl` + C++20 + `/MD`**, default **V8 OFF**, Abseil prefers [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`.
+**VolitionToolchain (product path):** Windows **MSVC `cl` + C++20 + `/MD`**, default **V8 OFF**, Abseil prefers [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`. Product consumer: [Volition](https://github.com/yanxijian/Volition).
 
 ## Layout
 

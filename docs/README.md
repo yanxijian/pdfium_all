@@ -1,6 +1,6 @@
 # docs
 
-本目录存放 pdfium_all / PDFium 相关文档（构建、集成、发布、设计笔记等）。
+本目录存放 [pdfium_all](https://github.com/yanxijian/pdfium_all) / PDFium 相关文档（构建、集成、发布、设计笔记等）。
 
 | 文档 | 内容 |
 |------|------|

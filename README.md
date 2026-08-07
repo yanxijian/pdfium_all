@@ -4,10 +4,10 @@
 
 PDFium 聚合 **meta** 仓库：源码 submodule、第三方镜像、文档与 stage 产物统一组织。
 
-仓库：https://github.com/yanxijian/pdfium_all  
+仓库：[yanxijian/pdfium_all](https://github.com/yanxijian/pdfium_all)  
 English：[`docs/en/README.md`](docs/en/README.md)
 
-> **VolitionToolchain（产品路径）**：Windows **MSVC `cl` + C++20 + `/MD`**，默认 **V8 OFF**，Abseil 优先 [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`。
+> **VolitionToolchain（产品路径）**：Windows **MSVC `cl` + C++20 + `/MD`**，默认 **V8 OFF**，Abseil 优先 [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`。产品消费方见 [Volition](https://github.com/yanxijian/Volition)。
 
 ## 目录
 
