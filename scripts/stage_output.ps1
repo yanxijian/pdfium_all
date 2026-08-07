@@ -25,6 +25,13 @@ $binDst = Join-Path $OutRoot "bin"
 $publicDst = Join-Path $includeDst "public"
 
 New-Item -ItemType Directory -Force -Path $includeDst, $libDst, $binDst | Out-Null
+# Wipe prior stage (avoids leftover V8/libc++ when restaging product V8=OFF).
+Get-ChildItem -LiteralPath $binDst -Force -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -ne '.gitkeep' } |
+  Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+Get-ChildItem -LiteralPath $libDst -Force -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -ne '.gitkeep' } |
+  Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 if (Test-Path -LiteralPath $publicDst) {
   Remove-Item -Recurse -Force -LiteralPath $publicDst
 }
@@ -110,16 +117,19 @@ function Stage-SampleExe([string] $Name) {
 }
 
 Stage-SampleExe -Name "simple_no_v8" | Out-Null
-Stage-SampleExe -Name "simple_with_v8" | Out-Null
-
-# Also stage shared V8 runtimes from the stamp (in case POST_BUILD skipped some).
-if (-not $V8Root) {
-  if ($env:PDFIUM_V8_ROOT) { $V8Root = $env:PDFIUM_V8_ROOT }
-  else {
-    $def = Join-Path $RepoRoot ".tools\v8-out"
-    if (Test-Path (Join-Path $def "bin\v8.dll")) { $V8Root = $def }
-  }
+# Only stage V8 sample / runtimes when caller passes -V8Root (product path is V8=OFF).
+if ($V8Root) {
+  Stage-SampleExe -Name "simple_with_v8" | Out-Null
 }
+# Prefer AbseilPin shared DLL over any leftover next to the build tree (vcpkg copy).
+$pinAbseil = Join-Path (Split-Path $RepoRoot -Parent) "AbseilPin\prefix\20260107.1\bin\abseil_dll.dll"
+if (Test-Path -LiteralPath $pinAbseil) {
+  Copy-Item -LiteralPath $pinAbseil -Destination (Join-Path $binDst "abseil_dll.dll") -Force
+  Write-Host "Staged AbseilPin abseil_dll.dll"
+  $buildAbseil = Join-Path $BuildDir "abseil_dll.dll"
+  Copy-Item -LiteralPath $pinAbseil -Destination $buildAbseil -Force
+}
+
 if ($V8Root) {
   $v8Bin = Join-Path $V8Root "bin"
   if (Test-Path -LiteralPath $v8Bin) {
