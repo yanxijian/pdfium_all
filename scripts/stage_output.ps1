@@ -25,7 +25,7 @@ $binDst = Join-Path $OutRoot "bin"
 $publicDst = Join-Path $includeDst "public"
 
 New-Item -ItemType Directory -Force -Path $includeDst, $libDst, $binDst | Out-Null
-# Wipe prior stage (avoids leftover V8/libc++ when restaging product V8=OFF).
+# Replace prior staged binaries so product and V8 layouts do not mix.
 Get-ChildItem -LiteralPath $binDst -Force -ErrorAction SilentlyContinue |
   Where-Object { $_.Name -ne '.gitkeep' } |
   Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
@@ -117,11 +117,11 @@ function Stage-SampleExe([string] $Name) {
 }
 
 Stage-SampleExe -Name "simple_no_v8" | Out-Null
-# Only stage V8 sample / runtimes when caller passes -V8Root (product path is V8=OFF).
+# V8 sample and runtimes only when -V8Root is provided.
 if ($V8Root) {
   Stage-SampleExe -Name "simple_with_v8" | Out-Null
 }
-# Prefer AbseilPin shared DLL over any leftover next to the build tree (vcpkg copy).
+# Prefer sibling AbseilPin shared DLL when present.
 $pinAbseil = Join-Path (Split-Path $RepoRoot -Parent) "AbseilPin\prefix\20260107.1\bin\abseil_dll.dll"
 if (Test-Path -LiteralPath $pinAbseil) {
   Copy-Item -LiteralPath $pinAbseil -Destination (Join-Path $binDst "abseil_dll.dll") -Force
