@@ -10,13 +10,30 @@
 # 本地工具与构建树（勿提交）
 /.tools/
 /pdfium/out/
+/build/
+/build-*/
+/out/
+/cmake-build-*/
+/.vs/
+/.idea/
 
 # 常见临时文件
 *.user
+*.user.*
 *.suo
 .DS_Store
 Thumbs.db
+*~
+*.tmp
+*.swp
+*.log
 
-# 本机试编日志 / cl 预处理产物（勿提交）
-/out-msvc*.log
+# 本机试编 / cl 预处理产物（勿提交）
 /annotcontext*.i
+
+# CMake 散落文件
+CMakeUserPresets.json
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+_deps/
