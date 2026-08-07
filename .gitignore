@@ -16,3 +16,7 @@
 *.suo
 .DS_Store
 Thumbs.db
+
+# 本机试编日志 / cl 预处理产物（勿提交）
+/out-msvc*.log
+/annotcontext*.i
