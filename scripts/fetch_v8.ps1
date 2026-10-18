@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Fetch V8 sources pinned to pdfium/DEPS `v8_revision` into .tools/v8-workspace.
 

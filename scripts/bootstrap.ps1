@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Initialize submodules and check toolchain for PDFium CMake MVP.
 

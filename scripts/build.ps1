@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Configure + build PDFium CMake MVP, then stage into output/.
 

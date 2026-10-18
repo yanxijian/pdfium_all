@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Copy PDFium CMake build products into pdfium_all/output/
 #>

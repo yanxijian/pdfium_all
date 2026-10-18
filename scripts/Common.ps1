@@ -1,4 +1,4 @@
-# Shared helpers for pdfium_all Windows scripts.
+﻿# Shared helpers for pdfium_all Windows scripts.
 # Dot-source from other scripts: . "$PSScriptRoot\Common.ps1"
 
 function Get-RepoRoot {

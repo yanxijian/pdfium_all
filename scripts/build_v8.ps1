@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Build shared (component) V8 with GN and stamp into .tools/v8-out for CMake.
 
