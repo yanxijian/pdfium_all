@@ -13,9 +13,6 @@
                           "build-",
                           "cmake-build"
                       ],
-    "skip_globs":  [
-
-                   ],
     "encoding":  [
                      {
                          "glob":  "*.md",
@@ -111,5 +108,8 @@
                           "required_patterns":  [
 
                                                 ]
-                      }
+                      },
+    "skip_globs":  [
+                       "docs/cmake-build.md"
+                   ]
 }
