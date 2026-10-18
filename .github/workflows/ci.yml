@@ -3,7 +3,18 @@ name: CI
 on:
   push:
     branches: [main, master]
+    # Documentation-only commits must not run the PDFium build. Build inputs are
+    # the scripts, the pinned submodules and the dependency lock. See
+    # RepoRules docs/ci-scheduling.md.
+    paths: &build_inputs
+      - "scripts/**"
+      - "thirdparty/**"
+      - "pdfium"
+      - "deps.lock.md"
+      - ".gitmodules"
+      - ".github/workflows/ci.yml"
   pull_request:
+    paths: *build_inputs
   workflow_dispatch:
 
 concurrency:
