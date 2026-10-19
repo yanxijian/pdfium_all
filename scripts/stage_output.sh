@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 将 PDFium CMake 构建产物拷贝到 pdfium_all/output/
+# Copy the PDFium CMake build output into pdfium_all/output/
 set -euo pipefail
 
 BUILD_DIR="${1:?Usage: $0 <cmake-build-dir>}"
