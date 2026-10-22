@@ -126,5 +126,9 @@
       "actions/workflows/",
       "img.shields.io/badge/License"
     ]
+  },
+  "about": {
+    "description": "PDFium 的 CMake 构建封装、钉版第三方依赖与 staged SDK 输出 | PDFium CMake build wrapper with pinned third-party mirrors and a staged SDK output",
+    "order": "zh-en"
   }
 }
