@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml/badge.svg)](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 
 PDFium 聚合 **meta** 仓库：源码 submodule、第三方镜像、文档与 stage 产物统一组织。
 

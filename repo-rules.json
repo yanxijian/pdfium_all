@@ -105,5 +105,15 @@
   },
   "commit_message": {
     "english": true
+  },
+  "readme_badges": {
+    "files": [
+      "README.md"
+    ],
+    "min": 3,
+    "require": [
+      "actions/workflows/",
+      "img.shields.io/badge/License"
+    ]
   }
 }
