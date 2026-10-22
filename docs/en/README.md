@@ -1,12 +1,16 @@
 # pdfium_all
 
+**English** · [简体中文](../../README.md)
+
 [![CI](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml/badge.svg)](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../../LICENSE)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
+
+<!-- translated-from: README.md sha256:a6381c876226 -->
 
 Meta-repo that aggregates **PDFium** sources, third-party mirrors, docs, and staged build output.
 
 Repo: [yanxijian/pdfium_all](https://github.com/yanxijian/pdfium_all)
-
-> Canonical docs are Chinese — start at the [root README](../../README.md).
 
 **VolitionToolchain (product path):** Windows **MSVC `cl` + C++20 + `/MD`**, default **V8 OFF**, Abseil prefers [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`. Product consumer: [Volition](https://github.com/yanxijian/Volition).
 
@@ -63,3 +67,4 @@ Pins: [`deps.lock.md`](../../deps.lock.md). Policy: [`deps-policy.md`](../deps-p
 ## CI
 
 [GitHub Actions](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml): Windows MSVC product path + Ubuntu V8-off build.
+

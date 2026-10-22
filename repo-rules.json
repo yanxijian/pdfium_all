@@ -91,7 +91,17 @@
       "*.md"
     ],
     "check_links": true,
-    "bilingual_pairs": []
+    "bilingual_pairs": [],
+    "translations": {
+      "pairs": [
+        [
+          "README.md",
+          "docs/en/README.md"
+        ]
+      ],
+      "marker": "translated-from:",
+      "stale": "warning"
+    }
   },
   "gitattributes": {
     "path": ".gitattributes",
@@ -108,7 +118,8 @@
   },
   "readme_badges": {
     "files": [
-      "README.md"
+      "README.md",
+      "docs/en/README.md"
     ],
     "min": 3,
     "require": [

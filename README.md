@@ -1,13 +1,14 @@
 # pdfium_all
 
+**简体中文** · [English](docs/en/README.md)
+
 [![CI](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml/badge.svg)](https://github.com/yanxijian/pdfium_all/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 
 PDFium 聚合 **meta** 仓库：源码 submodule、第三方镜像、文档与 stage 产物统一组织。
 
-仓库：[yanxijian/pdfium_all](https://github.com/yanxijian/pdfium_all)  
-English：[`docs/en/README.md`](docs/en/README.md)
+仓库：[yanxijian/pdfium_all](https://github.com/yanxijian/pdfium_all)
 
 > **VolitionToolchain（产品路径）**：Windows **MSVC `cl` + C++20 + `/MD`**，默认 **V8 OFF**，Abseil 优先 [AbseilPin](https://github.com/yanxijian/AbseilPin) `20260107.1`。产品消费方见 [Volition](https://github.com/yanxijian/Volition)。
 
@@ -88,3 +89,4 @@ GitHub Actions：Windows MSVC 产品路径 + Ubuntu 无 V8 编通（见 [Actions
 ## License
 
 本仓的脚本、文档与打包元数据以 [Apache-2.0](LICENSE) 发布（与 PDFium 及其依赖生态一致）。`pdfium/` submodule 及各上游源码的许可证以其自身为准。
+
